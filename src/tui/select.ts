@@ -12,33 +12,37 @@ export async function select<T>(title: string, choices: Choice<T>[]): Promise<T 
     const screen = new Screen();
     let index = 0;
 
-    while (true) {
-      screen.render(buildFrame(title, choices, index));
-      const key = await readKey();
+    try {
+      while (true) {
+        screen.render(buildFrame(title, choices, index));
+        const key = await readKey();
 
-      switch (key.name) {
-        case 'up':
-        case 'tab-back':
-          index = (index - 1 + choices.length) % choices.length;
-          break;
-        case 'down':
-        case 'tab':
-          index = (index + 1) % choices.length;
-          break;
-        case 'home':
-          index = 0;
-          break;
-        case 'end':
-          index = choices.length - 1;
-          break;
-        case 'enter':
-          return choices[index].value;
-        case 'escape':
-        case 'ctrl-c':
-          return null;
-        default:
-          break;
+        switch (key.name) {
+          case 'up':
+          case 'tab-back':
+            index = (index - 1 + choices.length) % choices.length;
+            break;
+          case 'down':
+          case 'tab':
+            index = (index + 1) % choices.length;
+            break;
+          case 'home':
+            index = 0;
+            break;
+          case 'end':
+            index = choices.length - 1;
+            break;
+          case 'enter':
+            return choices[index].value;
+          case 'escape':
+          case 'ctrl-c':
+            return null;
+          default:
+            break;
+        }
       }
+    } finally {
+      screen.clear();
     }
   });
 }

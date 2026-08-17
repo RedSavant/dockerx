@@ -37,4 +37,11 @@ export class Screen {
     }
     this.renderedLines = lines.length;
   }
+
+  clear(): void {
+    if (this.renderedLines > 0) {
+      process.stdout.write(`\x1b[${this.renderedLines}A\x1b[J`);
+      this.renderedLines = 0;
+    }
+  }
 }
