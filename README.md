@@ -16,6 +16,10 @@ Prerequisites:
 - Node.js 22 or newer
 - Docker (`docker` CLI available in the PATH)
 
+Docker commands need access to the Docker daemon. If your user is not in the
+`docker` group, run DockerX with `sudo` — some operations (network management,
+pull, run) will fail with a permission error otherwise.
+
 From the repository:
 
 ```bash
