@@ -8,6 +8,15 @@ export async function checkDockerAvailable(): Promise<boolean> {
   });
 }
 
+export async function requireDocker(): Promise<void> {
+  const available = await checkDockerAvailable();
+  if (!available) {
+    throw new Error(
+      'Docker is not available. Install Docker and make sure the daemon is running (try "docker --version").',
+    );
+  }
+}
+
 export function runDocker(args: string[]): Promise<number> {
   return new Promise((resolve, reject) => {
     const child = spawn('docker', args, { stdio: 'inherit' });
