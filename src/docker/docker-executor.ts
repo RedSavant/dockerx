@@ -17,6 +17,18 @@ export async function requireDocker(): Promise<void> {
   }
 }
 
+export async function runDockerOutput(args: string[]): Promise<{ code: number; stdout: string }> {
+  return new Promise((resolve, reject) => {
+    const child = spawn('docker', args, { stdio: ['ignore', 'pipe', 'inherit'] });
+    const chunks: Buffer[] = [];
+    child.stdout.on('data', (chunk: Buffer) => chunks.push(chunk));
+    child.on('error', reject);
+    child.on('exit', (code) => {
+      resolve({ code: code ?? 1, stdout: Buffer.concat(chunks).toString('utf8') });
+    });
+  });
+}
+
 export function runDocker(args: string[]): Promise<number> {
   return new Promise((resolve, reject) => {
     const child = spawn('docker', args, { stdio: 'inherit' });

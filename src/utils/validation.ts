@@ -1,6 +1,7 @@
 export const PORT_MIN = 1;
 export const PORT_MAX = 65535;
 export const ENV_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
+export const NETWORK_NAME_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/;
 
 export function isValidPort(value: number): boolean {
   return Number.isInteger(value) && value >= PORT_MIN && value <= PORT_MAX;
