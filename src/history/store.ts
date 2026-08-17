@@ -5,6 +5,7 @@ import type { RunOptions } from '../types/run-options.js';
 
 export interface HistoryEntry extends RunOptions {
   runAt: string;
+  failed?: boolean;
 }
 
 export const MAX_HISTORY_ENTRIES = 20;
@@ -35,8 +36,8 @@ export function loadHistory(): HistoryEntry[] {
   return readHistory(historyFilePath());
 }
 
-export function addHistoryEntry(options: RunOptions): void {
-  const entry: HistoryEntry = { ...options, runAt: new Date().toISOString() };
+export function addHistoryEntry(options: RunOptions, failed = false): void {
+  const entry: HistoryEntry = { ...options, failed, runAt: new Date().toISOString() };
   writeHistory(historyFilePath(), limitHistory([entry, ...loadHistory()], MAX_HISTORY_ENTRIES));
 }
 

@@ -170,6 +170,9 @@ Supported drivers: `bridge` (default), `host`, `none`, `overlay`, `macvlan`,
 ## History
 
 Every launched container is recorded in `~/.config/dockerx/history.json`.
+Failed attempts (permission error, unavailable daemon, container exiting with a
+non-zero code) are recorded too, marked with `failed`, so you can spot them and
+re-run or modify them after fixing the issue (for example with `sudo`).
 
 ```bash
 dockerx history          # list the last runs, pick one to re-run or modify
