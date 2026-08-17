@@ -41,6 +41,8 @@ Tab, press Enter to select, Esc to go back:
 - **Run** — build a `docker run` command yourself: toggle the options you want
   (Image, name, ports, volumes, environment variables, `-it`, `--detach`,
   `--rm`, command) with Space, then confirm to run.
+- **Network** — list, create, remove and inspect Docker networks, choosing the
+  driver (bridge, host, none, overlay, macvlan, ipvlan).
 - **Exit** — leave the menu.
 
 ## Interactive usage
@@ -124,6 +126,18 @@ dockerx run node:22 --port 3000:3000 --dry-run
 Prints the generated command and exits without running or checking Docker.
 Useful for previewing a command, especially in CI, before launching it.
 
+## Network management
+
+```bash
+dockerx network ls
+dockerx network create my-net --driver macvlan
+dockerx network rm my-net
+dockerx network inspect my-net
+```
+
+Supported drivers: `bridge` (default), `host`, `none`, `overlay`, `macvlan`,
+`ipvlan`.
+
 ## Development commands
 
 ```bash
@@ -150,7 +164,7 @@ npm run format   # Prettier
 
 ## Future improvements
 
-- Support for Docker networks (`--network`, `--network-alias`)
+- Attach a network to the run command (`--network`, `--network-alias`)
 - Container management (`dockerx ps`, `dockerx stop`, `dockerx logs`)
 - Image selection from locally available images
 - Generating a `docker-compose.yml` from the answers
