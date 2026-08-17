@@ -167,6 +167,20 @@ dockerx network inspect my-net
 Supported drivers: `bridge` (default), `host`, `none`, `overlay`, `macvlan`,
 `ipvlan`.
 
+## History
+
+Every launched container is recorded in `~/.config/dockerx/history.json`.
+
+```bash
+dockerx history          # list the last runs, pick one to re-run or modify
+dockerx history clean    # clear the history
+```
+
+`dockerx history` shows the recent runs (date, image, name, flags). Selecting
+one offers to **re-run it as-is** or to **modify the options before
+re-running**: the run checklist opens pre-filled with the recorded settings
+(image, name, ports, volumes, environment, interactive/detached/rm flags).
+
 ## Development commands
 
 ```bash

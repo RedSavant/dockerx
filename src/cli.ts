@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
+import { cleanHistoryCli, historyCommand } from './commands/history.js';
 import { openMenu } from './commands/open.js';
 import {
   createNetworkCli,
@@ -90,6 +91,17 @@ network
   .description('Display detailed information about a network.')
   .argument('<name>', 'network name')
   .action((name: string) => runSafely(() => inspectNetworkCli(name)));
+
+const history = program
+  .command('history')
+  .description('Shows the last launched containers; pick one to re-run or modify.');
+
+history.action(() => runSafely(historyCommand));
+
+history
+  .command('clean')
+  .description('Clears the command history.')
+  .action(() => runSafely(cleanHistoryCli));
 
 program.parse();
 
