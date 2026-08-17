@@ -5,7 +5,7 @@
   "description": "Interactive CLI assistant for building and running docker run commands",
   "type": "module",
   "bin": {
-    "dockerx": "./dist/cli.js"
+    "dockerx": "dist/cli.js"
   },
   "files": [
     "dist"
@@ -19,7 +19,9 @@
     "start": "node dist/cli.js",
     "test": "vitest",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "publish:npmjs": "npm pkg set name=@rscomeback/dockerx && npm run build && npm publish --registry=https://registry.npmjs.org/ --access public && npm pkg set name=@RedSavant/dockerx",
+    "publish:github": "npm run build && npm publish"
   },
   "keywords": [
     "docker",
