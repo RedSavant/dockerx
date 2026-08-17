@@ -96,4 +96,10 @@ describe('formatHistoryLabel', () => {
   it('omits optional fields when absent', () => {
     expect(formatHistoryLabel(entry({ runAt: new Date(2026, 7, 17, 9, 30).toISOString() }))).toBe('17/08 09:30 · node:22 · -it');
   });
+
+  it('marks entries that failed to launch', () => {
+    expect(
+      formatHistoryLabel(entry({ failed: true, runAt: new Date(2026, 7, 17, 21, 5).toISOString() })),
+    ).toBe('17/08 21:05 · node:22 · -it · failed');
+  });
 });

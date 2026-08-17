@@ -16,7 +16,7 @@ export function formatHistoryLabel(entry: HistoryEntry): string {
   const flags = [entry.detach && '--detach', entry.interactive && '-it']
     .filter(Boolean)
     .join(' ');
-  return `${dd}/${mm} ${hh}:${min} · ${entry.image}${entry.name ? ` · ${entry.name}` : ''}${flags ? ` · ${flags}` : ''}`;
+  return `${dd}/${mm} ${hh}:${min} · ${entry.image}${entry.name ? ` · ${entry.name}` : ''}${flags ? ` · ${flags}` : ''}${entry.failed ? ' · failed' : ''}`;
 }
 
 export async function historyCommand(): Promise<void> {
@@ -70,6 +70,8 @@ function printHistory(entries: HistoryEntry[]): void {
     const flags = [entry.detach && '--detach', entry.interactive && '-it']
       .filter(Boolean)
       .join(' ');
-    console.log(`[${formatHistoryLabel(entry)}]${flags ? ` ${flags}` : ''}`);
+    console.log(
+      `[${formatHistoryLabel(entry)}]${flags ? ` ${flags}` : ''}${entry.failed ? ' failed' : ''}`,
+    );
   }
 }

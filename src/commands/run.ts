@@ -99,12 +99,16 @@ export async function executeRun(options: RunOptions, confirmBeforeRun: boolean,
     }
   }
 
-  await requireDocker();
+  try {
+    await requireDocker();
 
-  addHistoryEntry(options);
-
-  const exitCode = await runDocker(args);
-  process.exitCode = exitCode;
+    const exitCode = await runDocker(args);
+    addHistoryEntry(options, exitCode !== 0);
+    process.exitCode = exitCode;
+  } catch (error) {
+    addHistoryEntry(options, true);
+    throw error;
+  }
 }
 
 function buildOptionsFromCli(cli: RunCliOptions): RunOptions {
