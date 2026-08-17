@@ -119,6 +119,7 @@ export async function searchableList(options: SearchableListOptions): Promise<st
         }
       }
     } finally {
+      screen.clear();
       keys.close();
     }
   });
