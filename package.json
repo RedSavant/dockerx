@@ -3,7 +3,7 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Interactive CLI assistant for building and running docker run commands",
   "type": "module",
   "bin": {
