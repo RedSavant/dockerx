@@ -70,6 +70,8 @@ Tab, press Enter to select, Esc to go back:
 - **Run** — build a `docker run` command yourself: toggle the options you want
   (Image, name, ports, volumes, environment variables, `-it`, `--detach`,
   `--rm`, command) with Space, then confirm to run.
+- **History** — the last launched containers: pick one to re-run it as-is or to
+  modify its options before re-running (see [History](#history)).
 - **Network** — list, create, remove and inspect Docker networks, choosing the
   driver (bridge, host, none, overlay, macvlan, ipvlan).
 - **Exit** — leave the menu.
