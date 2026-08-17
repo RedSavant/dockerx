@@ -1,6 +1,14 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
+import { openMenu } from './commands/open.js';
+import {
+  createNetworkCli,
+  inspectNetworkCli,
+  listNetworksCli,
+  removeNetworksCli,
+} from './commands/network.js';
+import { NETWORK_DRIVERS } from './docker/networks.js';
 import { runCommand, type RunCliOptions } from './commands/run.js';
 
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as {
@@ -42,12 +50,54 @@ program
       rm: rawOptions.rm as boolean | undefined,
       dryRun: rawOptions.dryRun as boolean | undefined,
     };
-    try {
-      await runCommand(options);
-    } catch (error) {
-      console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
-      process.exitCode = 1;
-    }
+    return runSafely(() => runCommand(options));
   });
 
+program
+  .command('open')
+  .description('Opens the interactive DockerX menu.')
+  .action(() => runSafely(openMenu));
+
+const network = program.command('network').description('Manage Docker networks.');
+
+network
+  .command('ls')
+  .description('List networks.')
+  .action(() => runSafely(listNetworksCli));
+
+network
+  .command('create')
+  .description('Create a network.')
+  .argument('<name>', 'network name')
+  .option(
+    '-d, --driver <driver>',
+    `network driver (${NETWORK_DRIVERS.join(', ')})`,
+    'bridge',
+  )
+  .action((name: string, rawOptions: { driver?: string }) =>
+    runSafely(() => createNetworkCli(name, rawOptions.driver ?? 'bridge')),
+  );
+
+network
+  .command('rm')
+  .alias('remove')
+  .description('Remove one or more networks.')
+  .argument('<name...>', 'network names')
+  .action((names: string[]) => runSafely(() => removeNetworksCli(names)));
+
+network
+  .command('inspect')
+  .description('Display detailed information about a network.')
+  .argument('<name>', 'network name')
+  .action((name: string) => runSafely(() => inspectNetworkCli(name)));
+
 program.parse();
+
+async function runSafely(action: () => Promise<void>): Promise<void> {
+  try {
+    await action();
+  } catch (error) {
+    console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
+    process.exitCode = 1;
+  }
+}
