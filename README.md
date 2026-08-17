@@ -20,7 +20,32 @@ Docker commands need access to the Docker daemon. If your user is not in the
 `docker` group, run DockerX with `sudo` — some operations (network management,
 pull, run) will fail with a permission error otherwise.
 
-From the repository:
+### From npm
+
+```bash
+npm install -g @rscomeback/dockerx
+```
+
+If the global install fails with a `EACCES` permission error (npm is not allowed
+to write to `/usr/local`), either run it with `sudo`:
+
+```bash
+sudo npm install -g @rscomeback/dockerx
+```
+
+or configure npm to install in your home directory:
+
+```bash
+npm config set prefix ~/.npm-global
+echo 'export PATH="$HOME/.npm-global/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+npm install -g @rscomeback/dockerx
+```
+
+The `dockerx` command is then available globally. No DockerX install needed to
+try it out: `npx @rscomeback/dockerx open`.
+
+### From the repository
 
 ```bash
 npm install
