@@ -42,7 +42,7 @@ export async function promptRunOptions(): Promise<RunOptions> {
   };
 }
 
-async function promptPorts(): Promise<PortMapping[]> {
+export async function promptPorts(): Promise<PortMapping[]> {
   const addPorts = await confirm({ message: 'Add ports?', default: false });
   const ports: PortMapping[] = [];
 
@@ -73,7 +73,7 @@ async function promptPorts(): Promise<PortMapping[]> {
   return ports;
 }
 
-async function promptVolumes(): Promise<VolumeMapping[]> {
+export async function promptVolumes(): Promise<VolumeMapping[]> {
   const addVolumes = await confirm({ message: 'Add volumes?', default: false });
   const volumes: VolumeMapping[] = [];
 
@@ -103,7 +103,7 @@ async function promptVolumes(): Promise<VolumeMapping[]> {
   return volumes;
 }
 
-async function promptEnvVars(): Promise<EnvVar[]> {
+export async function promptEnvVars(): Promise<EnvVar[]> {
   const addEnvVars = await confirm({ message: 'Add environment variables?', default: false });
   const envVars: EnvVar[] = [];
 

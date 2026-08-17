@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
+import { openMenu } from './commands/open.js';
 import { runCommand, type RunCliOptions } from './commands/run.js';
 
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as {
@@ -42,12 +43,21 @@ program
       rm: rawOptions.rm as boolean | undefined,
       dryRun: rawOptions.dryRun as boolean | undefined,
     };
-    try {
-      await runCommand(options);
-    } catch (error) {
-      console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
-      process.exitCode = 1;
-    }
+    return runSafely(() => runCommand(options));
   });
 
+program
+  .command('open')
+  .description('Opens the interactive DockerX menu.')
+  .action(() => runSafely(openMenu));
+
 program.parse();
+
+async function runSafely(action: () => Promise<void>): Promise<void> {
+  try {
+    await action();
+  } catch (error) {
+    console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
+    process.exitCode = 1;
+  }
+}
