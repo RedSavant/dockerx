@@ -26,6 +26,23 @@ npm link
 
 The `dockerx` command is then available globally.
 
+## Interactive menu
+
+```bash
+dockerx open
+```
+
+Opens a full-screen menu in the terminal. Navigate with the arrow keys or
+Tab, press Enter to select, Esc to go back:
+
+- **Pull an image** — lists the first official images from the Docker Hub API.
+  Type to search (results update as you type), select an image and press Enter
+  to `docker pull` it.
+- **Run** — build a `docker run` command yourself: toggle the options you want
+  (Image, name, ports, volumes, environment variables, `-it`, `--detach`,
+  `--rm`, command) with Space, then confirm to run.
+- **Exit** — leave the menu.
+
 ## Interactive usage
 
 ```bash
