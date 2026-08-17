@@ -19,6 +19,7 @@ export type Key =
   | { name: 'char'; char: string };
 
 const ESCAPE = 0x1b;
+const ESCAPE_TIMEOUT_MS = 80;
 
 const CSI_MAP: Record<string, Key> = {
   A: { name: 'up' },
@@ -30,27 +31,29 @@ const CSI_MAP: Record<string, Key> = {
   Z: { name: 'tab-back' },
 };
 
-export function parseKeyBuffer(buffer: Buffer): Key | null {
+function parseKeySequence(buffer: Buffer): { key: Key; length: number } | null {
   if (buffer.length === 0) return null;
   const first = buffer[0];
 
   if (first !== ESCAPE) {
     switch (first) {
       case 0x03:
-        return { name: 'ctrl-c' };
+        return { key: { name: 'ctrl-c' }, length: 1 };
       case 0x0d:
       case 0x0a:
-        return { name: 'enter' };
+        return { key: { name: 'enter' }, length: 1 };
       case 0x09:
-        return { name: 'tab' };
+        return { key: { name: 'tab' }, length: 1 };
       case 0x7f:
       case 0x08:
-        return { name: 'backspace' };
+        return { key: { name: 'backspace' }, length: 1 };
       case 0x20:
-        return { name: 'space' };
-      default:
-        if (first < 0x20) return { name: 'char', char: '' };
-        return { name: 'char', char: new TextDecoder().decode(buffer).charAt(0) ?? '' };
+        return { key: { name: 'space' }, length: 1 };
+      default: {
+        if (first < 0x20) return { key: { name: 'char', char: '' }, length: 1 };
+        const char = new TextDecoder().decode(buffer).charAt(0) ?? '';
+        return { key: { name: 'char', char }, length: char === '' ? 1 : Buffer.byteLength(char) };
+      }
     }
   }
 
@@ -61,22 +64,33 @@ export function parseKeyBuffer(buffer: Buffer): Key | null {
     if (buffer.length < 3) return null;
     const code = String.fromCharCode(buffer[2]);
     const mapped = CSI_MAP[code];
-    if (mapped) return mapped;
-    if (code === '3' && buffer[3] === 0x7e) return { name: 'delete' };
-    return { name: 'char', char: '' };
+    if (mapped) return { key: mapped, length: 3 };
+    if (code === '3' && buffer[3] === 0x7e) return { key: { name: 'delete' }, length: 4 };
+    return { key: { name: 'char', char: '' }, length: 3 };
   }
 
-  return { name: 'escape' };
+  return { key: { name: 'escape' }, length: 1 };
 }
 
+export function parseKeyBuffer(buffer: Buffer): Key | null {
+  return parseKeySequence(buffer)?.key ?? null;
+}
+
+let pendingInput = Buffer.alloc(0);
+let pendingEscapeTimer: NodeJS.Timeout | undefined;
+
 export async function readKey(): Promise<Key> {
+  const leftover = parseKeySequence(pendingInput);
+  if (leftover) {
+    pendingInput = pendingInput.subarray(leftover.length);
+    return leftover.key;
+  }
+
   return new Promise((resolve, reject) => {
     const stdin = process.stdin;
-    const chunks: Buffer[] = [];
-    let escapeTimer: NodeJS.Timeout | undefined;
 
     const cleanup = (): void => {
-      clearTimeout(escapeTimer);
+      clearTimeout(pendingEscapeTimer);
       stdin.off('data', onData);
       stdin.off('error', onError);
     };
@@ -87,20 +101,21 @@ export async function readKey(): Promise<Key> {
     };
 
     const onData = (chunk: Buffer): void => {
-      chunks.push(chunk);
-      const buffer = Buffer.concat(chunks);
-      const key = parseKeyBuffer(buffer);
-      if (key) {
+      pendingInput = Buffer.concat([pendingInput, chunk]);
+      const parsed = parseKeySequence(pendingInput);
+      if (parsed) {
+        pendingInput = pendingInput.subarray(parsed.length);
         cleanup();
-        resolve(key);
+        resolve(parsed.key);
         return;
       }
-      clearTimeout(escapeTimer);
-      if (buffer.length === 1 && buffer[0] === ESCAPE) {
-        escapeTimer = setTimeout(() => {
+      clearTimeout(pendingEscapeTimer);
+      if (pendingInput.length === 1 && pendingInput[0] === ESCAPE) {
+        pendingEscapeTimer = setTimeout(() => {
+          pendingInput = Buffer.alloc(0);
           cleanup();
           resolve({ name: 'escape' });
-        }, 80);
+        }, ESCAPE_TIMEOUT_MS);
       }
     };
 
@@ -123,4 +138,82 @@ export async function withRawMode<T>(task: () => Promise<T>): Promise<T> {
     process.stdin.pause();
     process.stdout.write('\x1b[?25h');
   }
+}
+
+export interface KeyQueue {
+  next(): Promise<Key>;
+  close(): void;
+}
+
+export function createKeyQueue(): KeyQueue {
+  const queue: Key[] = [];
+  let chunks: Buffer[] = [];
+  let resolver: ((key: Key) => void) | null = null;
+  let escapeTimer: NodeJS.Timeout | undefined;
+  let closed = false;
+
+  const deliver = (key: Key): void => {
+    if (resolver) {
+      const resolve = resolver;
+      resolver = null;
+      resolve(key);
+    } else {
+      queue.push(key);
+    }
+  };
+
+  const flush = (): void => {
+    let buffer = Buffer.concat(chunks);
+    chunks = [];
+    let parsed = parseKeySequence(buffer);
+    while (parsed) {
+      deliver(parsed.key);
+      buffer = buffer.subarray(parsed.length);
+      parsed = parseKeySequence(buffer);
+    }
+    if (buffer.length > 0) chunks = [buffer];
+  };
+
+  const onData = (chunk: Buffer): void => {
+    if (closed) return;
+    chunks.push(chunk);
+    clearTimeout(escapeTimer);
+    flush();
+    if (chunks.length === 1 && chunks[0].length === 1 && chunks[0][0] === ESCAPE) {
+      escapeTimer = setTimeout(() => {
+        chunks = [];
+        deliver({ name: 'escape' });
+      }, ESCAPE_TIMEOUT_MS);
+    }
+  };
+
+  const onError = (): void => {
+    deliver({ name: 'escape' });
+  };
+
+  const next = (): Promise<Key> => {
+    if (closed) return Promise.resolve({ name: 'escape' });
+    if (queue.length > 0) return Promise.resolve(queue.shift() as Key);
+    return new Promise((resolve) => {
+      resolver = resolve;
+    });
+  };
+
+  const close = (): void => {
+    closed = true;
+    clearTimeout(escapeTimer);
+    process.stdin.off('data', onData);
+    process.stdin.off('error', onError);
+    if (resolver) {
+      const resolve = resolver;
+      resolver = null;
+      resolve({ name: 'escape' });
+    }
+  };
+
+  process.stdin.resume();
+  process.stdin.on('data', onData);
+  process.stdin.on('error', onError);
+
+  return { next, close };
 }
