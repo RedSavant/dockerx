@@ -8,7 +8,7 @@ export async function requireCompose(): Promise<void> {
   const { code } = await runDockerOutput(['compose', 'version']);
   if (code !== 0) {
     throw new Error(
-      'Docker Compose (the "docker compose" v2 plugin) is required but not available.',
+      'Docker Compose (the "docker compose" v2 plugin) is required but not available. Install it, for example with "apt install docker-compose-plugin" (Debian/Ubuntu), "dnf install docker-compose-plugin" (Fedora), "apk add docker-cli-compose" (Alpine) or "brew install docker-compose" (macOS), then retry.',
     );
   }
 }
