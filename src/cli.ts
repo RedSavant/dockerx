@@ -1,6 +1,15 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
+import { composeMenu } from './commands/compose-menu.js';
+import {
+  composeConfigCli,
+  composeDownCli,
+  composeLogsCli,
+  composePsCli,
+  composeUpCli,
+  loadProjectFromCwd,
+} from './commands/compose.js';
 import { cleanHistoryCli, historyCommand } from './commands/history.js';
 import { openMenu } from './commands/open.js';
 import {
@@ -102,6 +111,63 @@ history
   .command('clean')
   .description('Clears the command history.')
   .action(() => runSafely(cleanHistoryCli));
+
+const compose = program
+  .command('compose')
+  .description('Create and manage Docker Compose projects.');
+
+compose.action(() => runSafely(composeMenu));
+
+compose
+  .command('up')
+  .description('Start the project (detached by default).')
+  .option('--no-detach', 'run in the foreground')
+  .action((rawOptions: { detach?: boolean }) =>
+    runSafely(async () => {
+      const { file } = loadProjectFromCwd();
+      await composeUpCli(file, rawOptions.detach !== false);
+    }),
+  );
+
+compose
+  .command('down')
+  .description('Stop the project.')
+  .action(() =>
+    runSafely(async () => {
+      const { file } = loadProjectFromCwd();
+      await composeDownCli(file);
+    }),
+  );
+
+compose
+  .command('ps')
+  .description('Show the project status.')
+  .action(() =>
+    runSafely(async () => {
+      const { file } = loadProjectFromCwd();
+      await composePsCli(file);
+    }),
+  );
+
+compose
+  .command('logs')
+  .description('Follow the project logs (Ctrl+C to stop).')
+  .action(() =>
+    runSafely(async () => {
+      const { file } = loadProjectFromCwd();
+      await composeLogsCli(file);
+    }),
+  );
+
+compose
+  .command('config')
+  .description('Validate and render the compose file.')
+  .action(() =>
+    runSafely(async () => {
+      const { file } = loadProjectFromCwd();
+      await composeConfigCli(file);
+    }),
+  );
 
 program.parse();
 

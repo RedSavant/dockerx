@@ -1,3 +1,4 @@
+import { composeMenu } from './compose-menu.js';
 import { historyCommand } from './history.js';
 import { networkMenu } from './network-menu.js';
 import { pullImage } from './pull.js';
@@ -10,6 +11,7 @@ export async function openMenu(): Promise<void> {
     { value: 'pull', label: 'Pull an image', hint: 'search and pull from Docker Hub' },
     { value: 'run', label: 'Run', hint: 'build a docker run command yourself' },
     { value: 'history', label: 'History', hint: 're-run or modify a previous run' },
+    { value: 'compose', label: 'Compose', hint: 'create and manage a compose project' },
     { value: 'network', label: 'Network', hint: 'list, create, remove, inspect' },
     { value: 'exit', label: 'Exit' },
   ];
@@ -22,6 +24,8 @@ export async function openMenu(): Promise<void> {
       await guard(runInteractive);
     } else if (choice === 'history') {
       await guard(historyCommand);
+    } else if (choice === 'compose') {
+      await guard(composeMenu);
     } else if (choice === 'network') {
       await guard(networkMenu);
     } else {
