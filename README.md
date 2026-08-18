@@ -72,6 +72,8 @@ Tab, press Enter to select, Esc to go back:
   `--rm`, command) with Space, then confirm to run.
 - **History** — the last launched containers: pick one to re-run it as-is or to
   modify its options before re-running (see [History](#history)).
+- **Compose** — create and manage a Docker Compose project (see
+  [Docker Compose](#docker-compose)).
 - **Network** — list, create, remove and inspect Docker networks, choosing the
   driver (bridge, host, none, overlay, macvlan, ipvlan).
 - **Exit** — leave the menu.
@@ -186,6 +188,27 @@ one offers to **re-run it as-is** or to **modify the options before
 re-running**: the run checklist opens pre-filled with the recorded settings
 (image, name, ports, volumes, environment, interactive/detached/rm flags).
 
+## Docker Compose
+
+Create and manage a Compose project from the current directory. The generated
+file is `compose.yaml` (or `docker-compose.yml` when opening an existing one).
+
+```bash
+dockerx compose          # interactive menu
+dockerx compose up       # docker compose up -d (--no-detach for foreground)
+dockerx compose down     # docker compose down
+dockerx compose ps       # docker compose ps
+dockerx compose logs     # docker compose logs -f
+dockerx compose config   # validate and render the file
+```
+
+The interactive menu lets you add, edit and remove services (image, container
+name, ports, volumes, environment, interactive mode, command, `depends_on`,
+restart policy, working directory), preview the generated YAML, and start or
+stop the project. Existing `compose.yaml` files are parsed (js-yaml) so you can
+edit them; rewriting one confirms first because sections DockerX does not
+support (top-level `networks`, `volumes`, ...) would be dropped.
+
 ## Development commands
 
 ```bash
@@ -215,7 +238,7 @@ npm run format   # Prettier
 - Attach a network to the run command (`--network`, `--network-alias`)
 - Container management (`dockerx ps`, `dockerx stop`, `dockerx logs`)
 - Image selection from locally available images
-- Generating a `docker-compose.yml` from the answers
+- Compose: attach services to custom networks, `docker compose build`
 - `.env` file support
 - Shell completion (bash, zsh)
 
