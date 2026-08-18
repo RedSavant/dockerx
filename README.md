@@ -70,6 +70,10 @@ Tab, press Enter to select, Esc to go back:
 - **Run** — build a `docker run` command yourself: toggle the options you want
   (Image, name, ports, volumes, environment variables, `-it`, `--detach`,
   `--rm`, command) with Space, then confirm to run.
+- **History** — the last launched containers: pick one to re-run it as-is or to
+  modify its options before re-running (see [History](#history)).
+- **Compose** — create and manage a Docker Compose project (see
+  [Docker Compose](#docker-compose)).
 - **Network** — list, create, remove and inspect Docker networks, choosing the
   driver (bridge, host, none, overlay, macvlan, ipvlan).
 - **Exit** — leave the menu.
@@ -167,6 +171,49 @@ dockerx network inspect my-net
 Supported drivers: `bridge` (default), `host`, `none`, `overlay`, `macvlan`,
 `ipvlan`.
 
+## History
+
+Every launched container is recorded in `~/.config/dockerx/history.json`.
+Failed attempts (permission error, unavailable daemon, container exiting with a
+non-zero code) are recorded too, marked with `failed`, so you can spot them and
+re-run or modify them after fixing the issue (for example with `sudo`).
+
+```bash
+dockerx history          # list the last runs, pick one to re-run or modify
+dockerx history clean    # clear the history
+```
+
+`dockerx history` shows the recent runs (date, image, name, flags). Selecting
+one offers to **re-run it as-is** or to **modify the options before
+re-running**: the run checklist opens pre-filled with the recorded settings
+(image, name, ports, volumes, environment, interactive/detached/rm flags).
+
+## Docker Compose
+
+Create and manage a Compose project from the current directory. The generated
+file is `compose.yaml` (or `docker-compose.yml` when opening an existing one).
+
+```bash
+dockerx compose          # interactive menu
+dockerx compose up       # docker compose up -d (--no-detach for foreground)
+dockerx compose down     # docker compose down
+dockerx compose ps       # docker compose ps
+dockerx compose logs     # docker compose logs -f
+dockerx compose config   # validate and render the file
+```
+
+The interactive menu lets you add, edit and remove services (image, container
+name, ports, volumes, environment, interactive mode, command, `depends_on`,
+restart policy, working directory), preview the generated YAML, and start or
+stop the project. Existing `compose.yaml` files are parsed (js-yaml) so you can
+edit them; rewriting one confirms first because sections DockerX does not
+support (top-level `networks`, `volumes`, ...) would be dropped.
+
+Creating and editing a project works without the Compose plugin; only the
+execution commands (`up`, `down`, `ps`, `logs`, `config`) need the
+`docker compose` v2 plugin installed (e.g. `apt install docker-compose-plugin`
+on Debian/Ubuntu, `dnf install docker-compose` on Fedora/RHEL).
+
 ## Development commands
 
 ```bash
@@ -196,7 +243,7 @@ npm run format   # Prettier
 - Attach a network to the run command (`--network`, `--network-alias`)
 - Container management (`dockerx ps`, `dockerx stop`, `dockerx logs`)
 - Image selection from locally available images
-- Generating a `docker-compose.yml` from the answers
+- Compose: attach services to custom networks, `docker compose build`
 - `.env` file support
 - Shell completion (bash, zsh)
 
