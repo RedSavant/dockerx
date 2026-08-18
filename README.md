@@ -212,7 +212,7 @@ support (top-level `networks`, `volumes`, ...) would be dropped.
 Creating and editing a project works without the Compose plugin; only the
 execution commands (`up`, `down`, `ps`, `logs`, `config`) need the
 `docker compose` v2 plugin installed (e.g. `apt install docker-compose-plugin`
-on Debian/Ubuntu, `dnf install docker-compose-plugin` on Fedora).
+on Debian/Ubuntu, `dnf install docker-compose` on Fedora/RHEL).
 
 ## Development commands
 
