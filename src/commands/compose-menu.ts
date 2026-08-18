@@ -15,7 +15,6 @@ import {
   composeLogsCli,
   composePsCli,
   composeUpCli,
-  requireCompose,
 } from './compose.js';
 
 const RESTART_POLICIES: { value: RestartPolicy; label: string; hint: string }[] = [
@@ -25,8 +24,6 @@ const RESTART_POLICIES: { value: RestartPolicy; label: string; hint: string }[] 
 ];
 
 export async function composeMenu(): Promise<void> {
-  await requireCompose();
-
   const initialFile = findComposeFile(process.cwd());
   const project: ComposeProject = initialFile
     ? parseComposeYaml(readComposeFile(initialFile))
